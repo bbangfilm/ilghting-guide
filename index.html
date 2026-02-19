@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이영천 DP팀: 상업광고 키친 슈팅 가이드북 (Total Ver.)</title>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="[https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js](https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js)"></script>
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' },
+                        amber: { 450: '#f59e0b', 500: '#f59e0b' }, // Tungsten
+                        blue: { 450: '#60a5fa', 500: '#3b82f6' }, // Daylight
+                        cyan: { 400: '#22d3ee' },
+                        rose: { 500: '#f43f5e', 900: '#881337' },
+                        emerald: { 400: '#34d399', 500: '#10b981', 900: '#064e3b' },
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('[https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap](https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap)');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+        }
+
+        /* Chart Container Styling Constraints */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 300px;
+        }
+
+        /* Card Flip Animation */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            height: 220px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .flip-card-front {
+            background-color: #1e293b; /* Slate 800 */
+            border: 1px solid #334155;
+        }
+        .flip-card-back {
+            background-color: #0f172a; /* Slate 950 */
+            border: 1px solid #f59e0b; /* Amber border */
+            transform: rotateY(180deg);
+        }
+
+        /* Comic Bubble Styling */
+        .comic-bubble {
+            position: relative;
+            background: #ffffff;
+            color: #000;
+            border-radius: .4em;
+            padding: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .comic-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-top-color: #ffffff;
+            border-bottom: 0;
+            margin-left: -10px;
+            margin-bottom: -10px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(to right, #f59e0b, transparent);
+        }
+        
+        /* Smooth Scroll Behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-amber-500 selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="scrollToSection('dashboard')">
+                    <div class="w-8 h-8 bg-amber-500 rounded flex items-center justify-center text-slate-900 font-bold">DP</div>
+                    <span class="font-bold text-lg tracking-wider text-white hidden sm:block">LEE YOUNG-CHEON TEAM</span>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" class="bg-slate-800 p-2 rounded-md text-gray-400 hover:text-white hover:bg-slate-700 focus:outline-none" aria-controls="mobile-menu" aria-expanded="false" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <button onclick="scrollToSection('dashboard')" class="hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium transition text-slate-300">Dashboard</button>
+                        <button onclick="scrollToSection('terminology')" class="hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium transition text-slate-300">필수 용어</button>
+                        <button onclick="scrollToSection('burano')" class="hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium transition text-slate-300">BURANO 활용</button>
+                        <button onclick="scrollToSection('scenes')" class="hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium transition text-slate-300">실전 씬</button>
+                        <button onclick="scrollToSection('comic')" class="hover:text-amber-500 px-3 py-2 rounded-md text-sm font-medium transition text-slate-300">위기탈출</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu Panel -->
+        <div class="hidden md:hidden bg-slate-800 border-t border-slate-700" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button onclick="scrollToSection('dashboard')" class="text-slate-300 hover:text-amber-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left">Dashboard</button>
+                <button onclick="scrollToSection('terminology')" class="text-slate-300 hover:text-amber-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left">필수 용어</button>
+                <button onclick="scrollToSection('burano')" class="text-slate-300 hover:text-amber-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left">BURANO 활용</button>
+                <button onclick="scrollToSection('scenes')" class="text-slate-300 hover:text-amber-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left">실전 씬</button>
+                <button onclick="scrollToSection('comic')" class="text-slate-300 hover:text-amber-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left">위기탈출</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header id="dashboard" class="relative bg-slate-950 py-12 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="text-left w-full md:w-1/2">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-900/30 border border-blue-500/50 text-blue-400 text-xs font-bold mb-4">
+                        <i class="fa-solid fa-camera"></i> SONY BURANO 8K
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+                        상업광고 <span class="text-amber-500">키친 슈팅</span><br>가이드북 Total Ver.
+                    </h1>
+                    <p class="text-slate-400 text-lg mb-6">
+                        셰프의 퍼포먼스와 식재료의 씨즐감을 극대화하는 조명/촬영 통합 매뉴얼.<br>
+                        현장 맞춤형 용어와 솔루션을 인터랙티브하게 확인하세요.
+                    </p>
+                    <div class="flex gap-4 text-sm text-slate-500 font-mono">
+                        <span><i class="fa-solid fa-location-dot mr-1"></i> 스테인리스 주방</span>
+                        <span><i class="fa-solid fa-bolt mr-1"></i> 믹스드 라이팅</span>
+                    </div>
+                </div>
+                
+                <!-- Charts Section -->
+                <div class="w-full md:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Chart 1: Mixed Lighting -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-lg">
+                        <h3 class="text-sm font-bold text-slate-300 mb-2 text-center">💡 Mixed Lighting Balance</h3>
+                        <div class="chart-container">
+                            <canvas id="lightingChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">Daylight (배경) vs Tungsten (인물)</p>
+                    </div>
+                    <!-- Chart 2: Efficiency -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-lg">
+                        <h3 class="text-sm font-bold text-slate-300 mb-2 text-center">⚡ ISO Effect on Lighting</h3>
+                        <div class="chart-container">
+                            <canvas id="isoChart"></canvas>
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-2">고감도 ISO 사용 시 필요 광량 감소</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chapter 1: Terminology -->
+    <section id="terminology" class="py-16 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white section-title">Chapter 1. 현장 필수 용어 (Interactive)</h2>
+            <p class="text-slate-400 mb-8">카드를 클릭하여 현장에서 실제로 사용하는 뜻과 디렉팅 멘트를 확인하세요.</p>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
+                <button class="filter-btn active px-4 py-2 rounded-full bg-amber-500 text-slate-900 font-bold text-sm transition hover:bg-amber-400" onclick="filterTerms('all', this)">All</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-slate-800 text-slate-300 font-bold text-sm transition hover:bg-slate-700" onclick="filterTerms('mood', this)">톤앤매너</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-slate-800 text-slate-300 font-bold text-sm transition hover:bg-slate-700" onclick="filterTerms('position', this)">조명 위치</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-slate-800 text-slate-300 font-bold text-sm transition hover:bg-slate-700" onclick="filterTerms('control', this)">빛 통제</button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-slate-800 text-slate-300 font-bold text-sm transition hover:bg-slate-700" onclick="filterTerms('kitchen', this)">주방 특화</button>
+            </div>
+
+            <!-- Grid -->
+            <div id="termGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Cards injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 2: Burano Control Center -->
+    <section id="burano" class="py-16 bg-slate-950 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-3 mb-8">
+                <h2 class="text-3xl font-bold text-white section-title">Chapter 2. Sony BURANO Ops Center</h2>
+                <span class="bg-rose-600 text-white text-xs px-2 py-1 rounded font-bold animate-pulse">REC</span>
+            </div>
+            
+            <p class="text-slate-400 mb-8">무거운 조명 대신, 카메라의 기능을 활용하여 문제를 해결하는 스마트한 솔루션입니다.</p>
+
+            <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl flex flex-col md:flex-row min-h-[500px]">
+                <!-- Tab Menu -->
+                <div class="w-full md:w-1/4 bg-slate-800 p-2 md:p-4 border-b md:border-b-0 md:border-r border-slate-700 flex md:flex-col gap-2 overflow-x-auto">
+                    <button onclick="selectFeature('iso')" class="feature-tab active w-full text-left p-4 rounded-xl transition hover:bg-slate-700 flex items-center gap-3 bg-slate-700 border-l-4 border-amber-500">
+                        <i class="fa-solid fa-eye text-amber-500 text-xl"></i>
+                        <div>
+                            <div class="font-bold text-white">Dual Base ISO</div>
+                            <div class="text-xs text-slate-400">Low Light Solution</div>
+                        </div>
+                    </button>
+                    <button onclick="selectFeature('nd')" class="feature-tab w-full text-left p-4 rounded-xl transition hover:bg-slate-700 flex items-center gap-3 border-l-4 border-transparent">
+                        <i class="fa-solid fa-sun text-blue-400 text-xl"></i>
+                        <div>
+                            <div class="font-bold text-white">Variable ND</div>
+                            <div class="text-xs text-slate-400">Exposure Control</div>
+                        </div>
+                    </button>
+                    <button onclick="selectFeature('af')" class="feature-tab w-full text-left p-4 rounded-xl transition hover:bg-slate-700 flex items-center gap-3 border-l-4 border-transparent">
+                        <i class="fa-solid fa-bullseye text-emerald-400 text-xl"></i>
+                        <div>
+                            <div class="font-bold text-white">Fast Hybrid AF</div>
+                            <div class="text-xs text-slate-400">Focus Tracking</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div class="w-full md:w-3/4 p-6 md:p-10 relative">
+                    <div id="featureContent" class="h-full flex flex-col justify-center">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 3: Scene Scenarios -->
+    <section id="scenes" class="py-16 bg-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white section-title">Chapter 3. 실전 씬(Scene) 공략</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                
+                <!-- Scene A: Flambé -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-amber-500 transition duration-300 shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-fire text-amber-500 mr-2"></i> Scene A: 플람베 (Flambé)</h3>
+                        <span class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">High Contrast</span>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">1</div>
+                                <div class="font-semibold text-slate-200">베이스 누르기 (-2 Stop)</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "불꽃이 메인 조명입니다. 앰비언트 확 낮추고 불꽃 밝기 확보하세요."
+                            </div>
+                        </li>
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">2</div>
+                                <div class="font-semibold text-slate-200">인터랙티브 라이팅 (Interactive)</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "불 솟을 때 셰프 얼굴에 3200K 조명 순간적으로 딤업(Dim-up) 해주세요."
+                            </div>
+                        </li>
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">3</div>
+                                <div class="font-semibold text-slate-200">플리커(Flicker) 체크</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "고속 촬영 들어갑니다. 조명 주파수 셔터랑 맞는지 확인!"
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Scene B: Cutting -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-blue-500 transition duration-300 shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-utensils text-blue-400 mr-2"></i> Scene B: 칼질 인서트 (Cutting)</h3>
+                        <span class="text-xs bg-slate-700 px-2 py-1 rounded text-slate-300">Macro Detail</span>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">1</div>
+                                <div class="font-semibold text-slate-200">조명 붐업 (Boom Up)</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "카메라 그림자 지니까 조명 헤드 머리 위로 완전히 넘기세요."
+                            </div>
+                        </li>
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">2</div>
+                                <div class="font-semibold text-slate-200">씨즐감 확보 (Back Light)</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "재료 표면 윤기나게 뒤에서 엣지 라이트 강하게 쏴주세요."
+                            </div>
+                        </li>
+                        <li class="scene-step cursor-pointer p-3 rounded-lg bg-slate-900/50 hover:bg-slate-700 transition" onclick="toggleStep(this)">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full border-2 border-slate-500 flex items-center justify-center text-xs text-slate-500 check-circle">3</div>
+                                <div class="font-semibold text-slate-200">마이크로 쉐이핑</div>
+                            </div>
+                            <div class="mt-2 ml-9 text-sm text-slate-400 hidden detail-text">
+                                "칼날 반사는 블랙 테이프로 가리고, 어두운 부분은 A4용지로 반사 채우세요."
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 4: Comic Strip -->
+    <section id="comic" class="py-16 bg-slate-950 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white text-center mb-10 section-title">Chapter 4. 위기탈출 시나리오: 스테인리스의 저주</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Cut 1 -->
+                <div class="bg-white p-4 rounded-lg border-4 border-slate-900 h-64 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-2 left-2 bg-rose-600 text-white text-xs font-bold px-2 py-1">CUT 1: 위기 발생</div>
+                    <div class="flex justify-center items-end h-full gap-4 pb-4">
+                        <div class="flex flex-col items-center">
+                            <div class="comic-bubble mb-2 bg-slate-200">으악! 반사 때문에<br>아무것도 안 보여!</div>
+                            <i class="fa-solid fa-user-tie text-6xl text-slate-800"></i>
+                            <span class="text-xs font-bold text-slate-900">DP</span>
+                        </div>
+                        <div class="flex flex-col items-center animate-pulse">
+                            <i class="fa-solid fa-bolt text-6xl text-amber-500"></i>
+                            <span class="text-xs font-bold text-slate-900">반사광</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cut 2 -->
+                <div class="bg-white p-4 rounded-lg border-4 border-slate-900 h-64 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-2 left-2 bg-slate-600 text-white text-xs font-bold px-2 py-1">CUT 2: 멘붕</div>
+                    <div class="flex justify-center items-end h-full gap-4 pb-4">
+                        <div class="flex flex-col items-center">
+                            <div class="comic-bubble mb-2">이거 다 잡으려면<br>30분 걸려요 ㅠㅠ</div>
+                            <i class="fa-solid fa-user-gear text-6xl text-blue-800"></i>
+                            <span class="text-xs font-bold text-slate-900">Gaffer</span>
+                        </div>
+                        <div class="flex flex-col items-center opacity-50">
+                            <i class="fa-solid fa-hat-chef text-6xl text-slate-400"></i>
+                            <span class="text-xs font-bold text-slate-900">Chef (지침)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cut 3 -->
+                <div class="bg-white p-4 rounded-lg border-4 border-slate-900 h-64 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1">CUT 3: 해결</div>
+                    <div class="flex justify-center items-end h-full gap-4 pb-4">
+                        <div class="flex flex-col items-center z-10">
+                            <div class="comic-bubble mb-2 bg-amber-100 border-amber-500">부라노 ND 돌릴게!<br>조명엔 스커트만 쳐!</div>
+                            <i class="fa-solid fa-camera text-5xl text-slate-900"></i>
+                        </div>
+                        <div class="flex flex-col items-center opacity-80">
+                            <i class="fa-solid fa-layer-group text-4xl text-black"></i>
+                            <span class="text-xs font-bold">Black Skirt</span>
+                        </div>
+                    </div>
+                    <!-- Effect Lines -->
+                    <div class="absolute inset-0 bg-amber-100/30" style="background-image: radial-gradient(circle, transparent 20%, #fff 20%); background-size: 10px 10px;"></div>
+                </div>
+
+                <!-- Cut 4 -->
+                <div class="bg-white p-4 rounded-lg border-4 border-slate-900 h-64 relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-2 left-2 bg-emerald-600 text-white text-xs font-bold px-2 py-1">CUT 4: 성공</div>
+                    <div class="flex justify-center items-end h-full gap-8 pb-4">
+                        <div class="flex flex-col items-center">
+                            <div class="comic-bubble mb-2 bg-emerald-100">오케이! 믹스드 라이팅<br>죽인다! 다음 컷!</div>
+                            <i class="fa-solid fa-thumbs-up text-6xl text-emerald-600"></i>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <i class="fa-solid fa-bowl-food text-6xl text-amber-600 drop-shadow-lg"></i>
+                            <span class="text-xs font-bold text-slate-900">Perfect Shot</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4 text-slate-500 text-sm font-mono">Created by Lee Young-Cheon DP Team</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-500 py-8 text-center border-t border-slate-800">
+        <p>© 2024 Commercial Kitchen Shoot Guide. All rights reserved.</p>
+        <p class="text-xs mt-2">Optimized for Sony Burano 8K Workflow</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Data: Terminology (Updated with 4 Categories) ---
+        const terminology = [
+            // 1. Mood & Quality
+            { id: 101, term: "믹스드 라이팅", eng: "Mixed Lighting", desc: "Daylight(배경)와 Tungsten(인물)의 색온도를 섞는 기법", type: "mood", script: "베이스는 쿨하게, 인물은 웜하게." },
+            { id: 102, term: "하이키", eng: "High-Key", desc: "화면 전체가 밝고 그림자가 없는 화사한 스타일", type: "mood", script: "뷰티 톤으로 화사하게 밀어주세요." },
+            { id: 103, term: "로우키", eng: "Low-Key", desc: "어둡고 그림자가 짙은 대비가 강한 스타일", type: "mood", script: "고급스럽게 눌러서 갑시다." },
+            { id: 104, term: "하드 / 소프트", eng: "Hard / Soft", desc: "그림자의 선명도 차이 (직광 vs 확산광)", type: "mood", script: "그림자 너무 딱딱해요. 디퓨전 쳐서 풀어주세요." },
+            
+            // 2. Position
+            { id: 201, term: "키 라이트", eng: "Key Light", desc: "피사체를 비추는 주된 조명", type: "position", script: "키 라이트 45도 각도로 들어옵시다." },
+            { id: 202, term: "필 라이트", eng: "Fill Light", desc: "그림자 농도를 조절하는 보조광", type: "position", script: "필 살짝만 채워서 암부 디테일 살릴게요." },
+            { id: 203, term: "백 라이트", eng: "Back Light", desc: "피사체 뒤에서 비춰 배경과 분리시키는 빛", type: "position", script: "머릿결 살게 백 하나 세게 칩시다." },
+            { id: 204, term: "탑 라이트", eng: "Top Light", desc: "머리 위에서 수직으로 떨어지는 빛", type: "position", script: "도마 위 탑 조명, 그림자 안 지게 해주세요." },
+
+            // 3. Control & Shaping
+            { id: 301, term: "고보 / 플래그", eng: "Gobo / Flag", desc: "빛을 차단하는 검은 판/천", type: "control", script: "배경으로 새는 빛, 플래그로 커트해주세요." },
+            { id: 302, term: "네거티브 필", eng: "Negative Fill", desc: "검은 천을 대어 그림자를 더 진하게 만듦", type: "control", script: "쉐도우가 떠요. 블랙 대서 눌러주세요." },
+            { id: 303, term: "스커트", eng: "Skirt", desc: "조명 주변을 둘러 빛이 아래로만 가게 함", type: "control", script: "벽에 반사 튀니까 조명에 스커트 두릅시다." },
+            { id: 304, term: "젬볼", eng: "Gemball", desc: "공 모양 확산판. 은은한 베이스 조명용", type: "control", script: "전체 베이스로 젬볼 하나 띄워주세요." },
+
+            // 4. Kitchen & Operation
+            { id: 401, term: "프랙티컬", eng: "Practical", desc: "현장 소품 조명 (광량 조절 필수)", type: "kitchen", script: "저 펜던트 조명 너무 밝아요. 디밍해 주세요." },
+            { id: 402, term: "씨즐감", eng: "Sizzle", desc: "음식이 윤기 나게 보이는 상태 (역광 활용)", type: "kitchen", script: "고기 육즙 보이게 씨즐감 살려주세요." },
+            { id: 403, term: "인터랙티브", eng: "Interactive", desc: "상황에 맞춰 조명 밝기를 조절하는 효과", type: "kitchen", script: "불 솟을 때 조명도 같이 딤업(Dim-up)!" },
+            { id: 404, term: "플리커", eng: "Flicker", desc: "조명과 셔터스피드 불일치로 깜빡이는 현상", type: "kitchen", script: "슬로우 거니까 플리커 없는지 체크하세요." }
+        ];
+
+        // --- Data: Burano Features ---
+        const buranoFeatures = {
+            iso: {
+                title: "Dual Base ISO 3200",
+                subtitle: "Low Light Solution",
+                icon: "fa-eye",
+                color: "text-amber-500",
+                problem: "분위기 있는 저조도 주방. 조명을 더 치기엔 공간이 너무 좁고 장비가 거슬림.",
+                solution: "조명팀에게 광량 증폭을 요구하는 대신, 카메라 설정을 Base ISO 3200으로 변경하여 암부 노이즈 없이 밝기 확보.",
+                script: "\"감독님, 조명 더 키우지 마세요. 제가 ISO 3200으로 올려서 암부 살릴게요. 무드만 잡아주세요.\""
+            },
+            nd: {
+                title: "Electronic Variable ND",
+                subtitle: "Exposure Control",
+                icon: "fa-sun",
+                color: "text-blue-400",
+                problem: "인물 엣지 라이트가 너무 밝아 노출 오버. 조명을 줄이면 그림자 쉐이핑이 망가질 것 같음.",
+                solution: "조명 밸런스는 유지하고, 카메라 내장 전자식 가변 ND 필터로 농도만 0.3~0.6 스탑 미세 조정.",
+                script: "\"조명 밸런스 너무 좋습니다. 건드리지 마시고 그대로 계세요. 노출은 제가 ND로 0.3만 깎을게요.\""
+            },
+            af: {
+                title: "Fast Hybrid AF",
+                subtitle: "Focus Tracking",
+                icon: "fa-bullseye",
+                color: "text-emerald-400",
+                problem: "셰프의 현란한 칼질. 심도를 얕게(아웃포커싱) 하고 싶은데 포커스 나갈까봐 불안함.",
+                solution: "조리개를 T1.5~2.0까지 과감히 개방. 부라노의 AF 추적 감도를 믿고 촬영하여 조명 광량 부담도 줄임.",
+                script: "\"심도 얕게 갑니다. 포커스 나갈 걱정 마시고 셰프님은 연기에만 집중해 주세요.\""
+            }
+        };
+
+        // --- Init Functions ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTerms('all');
+            selectFeature('iso'); // Default selection
+            initCharts();
+        });
+
+        // --- Terminology Logic ---
+        function renderTerms(filterType, btnElement) {
+            const grid = document.getElementById('termGrid');
+            grid.innerHTML = '';
+
+            // Update button styles
+            if (btnElement) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('bg-amber-500', 'text-slate-900', 'active');
+                    btn.classList.add('bg-slate-800', 'text-slate-300');
+                });
+                btnElement.classList.remove('bg-slate-800', 'text-slate-300');
+                btnElement.classList.add('bg-amber-500', 'text-slate-900', 'active');
+            }
+
+            const filtered = filterType === 'all' ? terminology : terminology.filter(t => t.type === filterType);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'flip-card group';
+                card.onclick = function() { this.classList.toggle('flipped'); };
+                
+                let icon = 'fa-lightbulb';
+                if(item.type === 'position') icon = 'fa-crosshairs';
+                if(item.type === 'control') icon = 'fa-sliders';
+                if(item.type === 'kitchen') icon = 'fa-utensils';
+
+                card.innerHTML = `
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <i class="fa-solid ${icon} text-3xl mb-3 text-slate-500 group-hover:text-amber-500 transition"></i>
+                            <h3 class="text-xl font-bold text-white">${item.term}</h3>
+                            <p class="text-xs text-slate-400 mt-1">${item.eng}</p>
+                            <p class="text-xs text-amber-500 mt-4 animate-pulse">Click to flip</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <p class="text-sm text-slate-300 mb-3 border-b border-slate-700 pb-2 w-full">${item.desc}</p>
+                            <div class="bg-slate-800 p-2 rounded w-full">
+                                <p class="text-xs text-amber-500 font-bold mb-1">🗣️ 현장 디렉팅:</p>
+                                <p class="text-sm italic text-white">"${item.script}"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterTerms(type, btn) {
+            renderTerms(type, btn);
+        }
+
+        // --- Burano Feature Logic ---
+        function selectFeature(featureKey) {
+            // Update tabs
+            const tabs = document.querySelectorAll('.feature-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('bg-slate-700', 'border-amber-500');
+                tab.classList.add('border-transparent');
+
+                // Check if this tab corresponds to the featureKey
+                // We assume the onclick attribute looks like "selectFeature('key')"
+                if (tab.getAttribute('onclick').includes(`'${featureKey}'`)) {
+                     tab.classList.add('bg-slate-700', 'border-amber-500');
+                     tab.classList.remove('border-transparent');
+                }
+            });
+
+            // Render Content
+            const data = buranoFeatures[featureKey];
+            const contentDiv = document.getElementById('featureContent');
+            
+            contentDiv.innerHTML = `
+                <div class="animate-fade-in-up">
+                    <div class="flex items-center gap-4 mb-6">
+                        <i class="fa-solid ${data.icon} text-5xl ${data.color}"></i>
+                        <div>
+                            <h3 class="text-3xl font-bold text-white">${data.title}</h3>
+                            <p class="text-lg text-slate-400">${data.subtitle}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="bg-rose-900/20 border border-rose-900/50 p-4 rounded-lg">
+                            <h4 class="text-rose-400 font-bold mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Problem</h4>
+                            <p class="text-slate-300 text-sm">${data.problem}</p>
+                        </div>
+                        
+                        <div class="bg-emerald-900/20 border border-emerald-900/50 p-4 rounded-lg">
+                            <h4 class="text-emerald-400 font-bold mb-2"><i class="fa-solid fa-check-circle mr-2"></i>Solution</h4>
+                            <p class="text-slate-300 text-sm">${data.solution}</p>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-lg border-l-4 border-amber-500 mt-2">
+                            <p class="text-xs text-amber-500 font-bold uppercase mb-2">Director's Script</p>
+                            <p class="text-xl text-white italic font-serif">${data.script}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Scene Logic ---
+        function toggleStep(element) {
+            const detail = element.querySelector('.detail-text');
+            const circle = element.querySelector('.check-circle');
+            
+            if (detail.classList.contains('hidden')) {
+                detail.classList.remove('hidden');
+                element.classList.add('bg-slate-700');
+                element.classList.remove('bg-slate-900/50');
+                circle.innerHTML = '<i class="fa-solid fa-check text-white"></i>';
+                circle.classList.remove('border-slate-500', 'text-slate-500');
+                circle.classList.add('bg-amber-500', 'border-amber-500');
+            } else {
+                detail.classList.add('hidden');
+                element.classList.remove('bg-slate-700');
+                element.classList.add('bg-slate-900/50');
+                circle.innerText = Array.from(element.parentNode.children).indexOf(element) + 1;
+                circle.classList.add('border-slate-500', 'text-slate-500');
+                circle.classList.remove('bg-amber-500', 'border-amber-500');
+            }
+        }
+
+        // --- Chart.js Logic ---
+        function initCharts() {
+            // Helper function to wrap labels for better display
+            const wrapLabel = (str, maxLen = 15) => {
+                if (str.length <= maxLen) return str;
+                const words = str.split(' ');
+                const lines = [];
+                let currentLine = words[0];
+                for (let i = 1; i < words.length; i++) {
+                    if (currentLine.length + 1 + words[i].length <= maxLen) {
+                        currentLine += ' ' + words[i];
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            };
+
+            // Chart 1: Mixed Lighting Ratio
+            const ctx1 = document.getElementById('lightingChart').getContext('2d');
+            const lightingLabels = ['Daylight (Cool)', 'Tungsten (Warm)', 'Shadow (Black)'];
+            
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: lightingLabels,
+                    datasets: [{
+                        data: [50, 30, 20],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#020617'],
+                        borderColor: '#1e293b',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8' } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: ISO Efficiency
+            const ctx2 = document.getElementById('isoChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['ISO 400', 'ISO 800 (Base)', 'ISO 1600', 'ISO 3200 (Base)'],
+                    datasets: [{
+                        label: '필요 조명 광량 (Wattage)',
+                        data: [100, 50, 25, 12.5],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `필요 광량: ${context.raw}% (효율 증가)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Smooth Scroll
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
